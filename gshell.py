@@ -11,7 +11,7 @@ This allows them to write their own bind/reverse shells with ease using code blo
 """
 
 from shellcodes import shellcodes
-from evasion import encoders
+from evasion import encoders, encryptors, obfuscators
 #from mdextract import CodeBlock
 from mdextract import parse
 from argparse import RawTextHelpFormatter
@@ -178,7 +178,7 @@ def find_shell(shell_type, bind, reverse, hollowing, injectors):
                 #name = print('%s' % (match.group().replace('`','')))
                 return shell_type
 
-def generate_shells(payload, ip, port, block, language, encoding):
+def generate_shells(payload, ip, port, block, language, obfuscate, encoding):
     """
     Generates the shells
 
@@ -218,7 +218,10 @@ def generate_shells(payload, ip, port, block, language, encoding):
 
         #cmd_encode = ("\n".join([cb.code for cb in code_blocks]))
 
-        if encoding[0] is True:
+        if obfuscate is True:
+            print(green + "[+] Obfuscating the code", file=stream)
+            #obfuscators.ip_obfuscate(ip)
+        elif encoding[0] is True:
             print(blue + "[+] Adding URL Encoding", file=stream)
             encoders.url_encode(cmd)
         elif encoding[1] is True:
@@ -226,22 +229,22 @@ def generate_shells(payload, ip, port, block, language, encoding):
             question = input("[!] Do you want to base64 encode for Windows or Nix? ")
             if question == ("Windows"):
                 print(blue + "[+] Adding Windows UTF-16LE base64 Encoding", file=stream)
-                print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one-by-one.", file=stream)
+                print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one by one.", file=stream)
                 encoders.windows_base64(cmd)
             elif question == ("Nix"):
                 print(blue + "[+] Adding Nix base64 Encoding", file=stream)
-                print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one-by-one.", file=stream)
+                print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one by one.", file=stream)
                 encoders.base64_encode(cmd)
             else:
                 print(red + "[-] Error: The answer must be either Windows or Nix", file=stream)
                 exit(0)
         elif encoding[2] is True:
             print(blue + "[+] Adding base32 Encoding", file=stream)
-            print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one-by-one.", file=stream)
+            print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one by one.", file=stream)
             encoders.base32_encode(cmd)
         elif encoding[3] is True:
             print(blue + "[+] Adding base16 Encoding", file=stream) 
-            print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one-by-one.", file=stream)
+            print(magenta + "[!] Warning: If the code contains multiple lines, decode each line one by one.", file=stream)
             encoders.base16_encode(cmd)
         else:
             print(cmd)
@@ -271,34 +274,55 @@ def generate_shellcode(ip, port, shellcode_os, shellcode_payload):
     Generate the shellcodes
     """
 
-    # Temporary Code
-    print(green + "[+] Generating Linux shellcodes", file=stream)
-    if shellcode_payload[0] is True:
-        shellcodes.generate_bind_shell.linux_bind_tcp(ip, port)
-    if shellcode_payload[1] is True:
-        shellcodes.generate_reverse_shell.linux_reverse_tcp(ip, port)
-
-    # Code for when I add the Windows Shellcode
-    '''
     if shellcode_os[0] is True:
         print(green + "[+] Generating Windows shellcodes", file=stream)
         if shellcode_payload[0] is True:
-            shellcodes.generate_bind_shell.windows_bind_tcp(ip, port)
+            return shellcodes.generate_bind_shell.windows_bind_tcp(port)
         if shellcode_payload[1] is True:
-            shellcodes.generate_reverse_shell.windows_reverse_tcp(ip, port)
+            return shellcodes.generate_reverse_shell.windows_reverse_tcp(ip, port)
     if shellcode_os[1] is True:
         print(green + "[+] Generating Linux shellcodes", file=stream)
         if shellcode_payload[0] is True:
-            shellcodes.generate_bind_shell.linux_bind_tcp(ip, port)
+            return shellcodes.generate_bind_shell.linux_bind_tcp(port)
         if shellcode_payload[1] is True:
-            shellcodes.generate_reverse_shell.linux_reverse_tcp(ip, port)
-    '''
+            return shellcodes.generate_reverse_shell.linux_reverse_tcp(ip, port)
+
+def crypter(shellcode, encryptor):
+    """
+    Encrypt shellcode to bypass SOME AVs 
+    """
+
+    key = input("[!] Please enter an encryption key: ")
+    if key == "":
+        print(red + "[-] The encryption key cannot be empty: ", file=stream)
+        exit(1)
+    print(green + "[i] The decryption key is: " + key, file=stream)
+
+    if encryptor[0] is True:
+        print(green + "[+] Adding XOR Encryption", file=stream)
+        encryptors.xor_encrypt(shellcode, key)
+    elif encryptor[1] is True:
+        print(green + "[+] Adding AES Encryption", file=stream)
+        encryptors.aes_encrypt(shellcode, key)
+    elif encryptor[2] is True:
+        print(green + "[+] Adding DES Encryption", file=stream)
+        encryptors.des_encrypt(shellcode, key)
+    elif encryptor[3] is True:
+        print(green + "[+] Adding RC2 Encryption", file=stream)
+        encryptors.rc2_encrypt(shellcode, key)
+    elif encryptor[4] is True:
+        print(green + "[+] Adding Caesar Encryption", file=stream)
+        encryptors.caesar_encrypt(shellcode, key)
+    else:
+        print(red + "[-] Missing an encryptor", file=stream)
 
 def main():
     """
     Parse the arguments and decides the program flow
 
     This is also the help menu
+
+    allow_abbrev=False; Disables abbreviations
     """
 
     parser = argparse.ArgumentParser(description=f"""
@@ -312,11 +336,11 @@ def main():
 
 Generate shellcodes, bind shells and/or reverse shells with style
 
-            Version: 1.2
+            Version: 1.3 dev
             Author: nozerobit
             Twitter: @nozerobit
 """, 
-    formatter_class=RawTextHelpFormatter, add_help=False)
+    formatter_class=RawTextHelpFormatter, add_help=False, allow_abbrev=False)
     parser._optionals.title = "Options"
     parser.add_argument('-i', '--ip', metavar="<IP ADDRESS>", action='store', dest='ip', type=str, help='Specify the IP address')
     parser.add_argument('-p', '--port', metavar="<PORT NUMBER>", action='store', dest='port', type=int, help='Specify the port number')
@@ -333,24 +357,36 @@ Generate shellcodes, bind shells and/or reverse shells with style
     snippets_arg.add_argument("--injector", action="store_true", dest='injector', help="Print process injector code snippets")
 
     # Shellcodes
-    shellcode_arg = parser.add_argument_group('Shellcode Required Options')
-    shellcode_arg.add_argument("--shellcode", action="store_true", required=False, help="Generate shellcodes, requires --srev or --sbind and --linux")
+    shellcode_arg = parser.add_argument_group('Shellcode Types')
+    shellcode_arg.add_argument("--shellcode", action="store_true", required=False, help="Generate shellcodes, requires --srev or --sbind and --windows or --linux")
     shellcode_arg.add_argument("--srev", action="store_true", dest='srev', help="Reverse shell shellcode")
     shellcode_arg.add_argument("--sbind", action="store_true", dest='sbind', help="Bind shell shellcode")
-    #shellcode_arg.add_argument("--windows", action='store_true', dest='windows', help="Windows shellcode")
+    shellcode_arg.add_argument("--windows", action='store_true', dest='windows', help="Windows shellcode")
     shellcode_arg.add_argument("--linux", action='store_true', dest='linux', help="Linux shellcode")
     
     # Encodings Options
     encodings = parser.add_argument_group('Encoding Options')
-    encodings.add_argument("--base64", action="store_true", required=False, help="Add base64 encoding")
-    encodings.add_argument("--base32", action="store_true", required=False, help="Add base32 encoding")
-    encodings.add_argument("--base16", action="store_true", required=False, help="Add base16 encoding")
-    encodings.add_argument("--url", action="store_true", required=False, help="Add URL encoding")
+    encodings.add_argument("--base64", action="store_true", required=False, help="Add base64 encoding to payload types")
+    encodings.add_argument("--base32", action="store_true", required=False, help="Add base32 encoding to payload types")
+    encodings.add_argument("--base16", action="store_true", required=False, help="Add base16 encoding to payload types")
+    encodings.add_argument("--url", action="store_true", required=False, help="Add URL encoding to payload types")
 
     # Obfuscation Options
-    #obfuscation = parser.add_argument_group("Obfuscation Options")
-    #obfuscation.add_argument("--ipfuscate", action="store_true", required=False, help="Obfuscate IP address")
-    #obfuscation.add_argument("--obfuscatel", action="store_true", default=False, required=False, help="Obfuscate very little")
+    obfuscation = parser.add_argument_group("Obfuscation Options")
+    obfuscation.add_argument("--obfuscate", action="store_true", required=False, help="Obfuscate payload types")
+
+    # Encryptors Options
+    encriptadores = parser.add_argument_group("Encryptor Options")
+    encriptadores.add_argument("--xor", action="store_true", required=False, help="XOR encrypt shellcode types")
+    encriptadores.add_argument("--aes", action="store_true", required=False, help="AES encrypt shellcode types")
+    encriptadores.add_argument("--des", action="store_true", required=False, help="DES encrypt shellcode types")
+    encriptadores.add_argument("--rc2", action="store_true", required=False, help="RC2 encrypt shellcode types")
+    encriptadores.add_argument("--caesar", action="store_true", required=False, help="Caesar encrypt shellcode types")
+
+    # AMSI Options
+    #amsi = parser.add_argument_group("AMSI Options")
+    #amsi.add_argument("--opcodes", action="store_true", required=False, help="Convert payload types code to opcodes")
+    #amsi.add_argument("--reflection", action="store_true", required=False, help="Convert payload types code to reflection")
 
     # Markdown Options
     markdown = parser.add_argument_group("Markdown Options")
@@ -360,8 +396,8 @@ Generate shellcodes, bind shells and/or reverse shells with style
 
     # Assistance / Help
     help_arg = parser.add_argument_group('Help Options')
-    help_arg.add_argument('-l', '--list', action='store_true', help='List the available shell types')
-    help_arg.add_argument('-a', '--advice', action='store_true', dest='advice', help='Print advice and tips to get connections')
+    help_arg.add_argument('--list', action='store_true', help='List the available shell types')
+    help_arg.add_argument('--advice', action='store_true', dest='advice', help='Print advice and tips to get connections')
     help_arg.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS, help='Show this help message and exit') 
 
     if len(sys.argv) == 1:
@@ -382,7 +418,7 @@ Generate shellcodes, bind shells and/or reverse shells with style
     injectors = args.injector
     # Shellcodes
     shellcode = args.shellcode
-    #shellcode_windows = args.windows
+    shellcode_windows = args.windows
     shellcode_linux = args.linux
     shellcode_reverse = args.srev
     shellcode_bind = args.sbind
@@ -392,8 +428,13 @@ Generate shellcodes, bind shells and/or reverse shells with style
     base16_encoding = args.base16
     url_encoding = args.url
     # Obfuscation
-    #ip_ob = args.ipfuscate
-    #little_ob = args.obfuscatel
+    ob = args.obfuscate
+    # Encryptors
+    xor_encrypt = args.xor
+    aes_encrypt = args.aes
+    des_encrypt = args.des
+    rc2_encrypt = args.rc2
+    caesar_encrypt = args.caesar
     # Markdown
     block = not args.no_block
     #language = args.language
@@ -402,19 +443,37 @@ Generate shellcodes, bind shells and/or reverse shells with style
     advice = args.advice
     shell_list = args.list
 
-    # Encodings List
     all_encodings = [url_encoding, 
     base64_encoding,
     base32_encoding,
     base16_encoding]
 
-    # Shellcode OS List
-    #shellcode_os = [shellcode_windows, shellcode_linux]
-    # Shellcode Payload List
+    shellcode_os = [shellcode_windows, shellcode_linux]
     shellcode_payload = [shellcode_bind, shellcode_reverse]
+
+    all_encryptors = [xor_encrypt,
+    aes_encrypt,
+    des_encrypt,
+    rc2_encrypt,
+    caesar_encrypt]
 
     #if debug:
     #    pprint(args)
+
+    def verify_ip_and_port(ip, port):
+        if ip is not None and port is not None:
+            verify_ip(ip)
+            verify_port(port)
+        else:
+            print(yellow + "[!] Please specify an IP address and a port number, use the option -h, --help", file=stream)
+            exit(1)
+
+    def verify_port_only(port):
+        if port is not None:
+            verify_port(port)
+        else:
+            print(yellow + "[!] Please specify a port number, use the option -h, --help", file=stream)
+            exit(1)
 
     if advice is True:
         print("""
@@ -447,14 +506,8 @@ Before: Verify for defensive mechanism and devices such as:
         list_shells()
         exit(0)
 
-    '''
-    if bind is False and reverse is False:
-        print(red + "[-] Please use either --bind or --reverse options", file=stream)
-        exit(1)
-    '''
-
     if bind is True and reverse is True:
-        print(red + "[-] Can't use both --bind and --reverse options", file=stream)
+        print(red + "[-] Can't use both --bind and --reverse options at the same time", file=stream)
         exit(1)
 
     if ((url_encoding==True and base64_encoding==True) or (url_encoding==True and base32_encoding==True)):
@@ -477,12 +530,72 @@ Before: Verify for defensive mechanism and devices such as:
         print(red + "[-] Can't use a payload type and a code snippet type at the same time", file=stream)
         exit(1)
     
-    if ((bind==True and shellcode==True) or (bind==True and shellcode==True)):
+    if ((bind==True and shellcode==True) or (reverse==True and shellcode==True)):
         print(red + "[-] Can't use a payload type and a shellcode type at the same time", file=stream)
         exit(1)
 
-    if ((reverse==True and shellcode==True) or (reverse==True and shellcode==True)):
-        print(red + "[-] Can't use a payload type and a shellcode type at the same time", file=stream)
+    if ((bind==True and xor_encrypt==True) or (bind==True and aes_encrypt==True)):
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if ((bind==True and des_encrypt==True) or (bind==True and rc2_encrypt==True)):
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if bind==True and caesar_encrypt==True:
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if ((reverse==True and xor_encrypt==True) or (reverse==True and aes_encrypt==True)):
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if ((reverse==True and des_encrypt==True) or (reverse==True and rc2_encrypt==True)):
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if reverse==True and caesar_encrypt==True:
+        print(red + "[-] Can't use encryption options and payload types at the same time.", file=stream)
+        exit(1)
+
+    if hollowing==True and injectors==True:
+        print(red + "[-] Can't use process hollowing and process injectors code snippets at the same time.", file=stream)
+        exit(1)
+
+    if ((ob==True and injectors==True) or (ob==True and hollowing==True)):
+        print(red + "[-] Can't use code snippets and obfuscation options at the same time.", file=stream)
+        exit(1)
+
+    if ((ob==True and url_encoding==True) or (ob==True and base64_encoding==True)):
+        print(red + "[-] Can't use enconding options and obfuscation at the same time.", file=stream)
+        exit(1)
+
+    if ((ob==True and base32_encoding==True) or (ob==True and base16_encoding==True)):
+        print(red + "[-] Can't use enconding options and obfuscation at the same time.", file=stream)
+        exit(1)
+
+    if ((ob==True and xor_encrypt==True) or (ob==True and aes_encrypt==True)):
+        print(red + "[-] Can't use encryption options and obfuscation at the same time.", file=stream)
+        exit(1)
+
+    if ((ob==True and des_encrypt==True) or (ob==True and rc2_encrypt==True)):
+        print(red + "[-] Can't use encryption options and obfuscation at the same time.", file=stream)
+        exit(1)
+
+    if ob==True and caesar_encrypt==True:
+        print(red + "[-] Can't use encryption options and obfuscation at the same time.", file=stream)
+        exit(1)
+
+    if ((shellcode==True and injectors==True) or (shellcode==True and hollowing==True)):
+        print(red + "[-] Can't use code snippets and shellcode options at the same time.", file=stream)
+        exit(1)
+
+    if ((shellcode==True and url_encoding==True) or (shellcode==True and base64_encoding==True)):
+        print(red + "[-] Can't use enconding options and shellcode at the same time.", file=stream)
+        exit(1)
+
+    if ((shellcode==True and base32_encoding==True) or (shellcode==True and base16_encoding==True)):
+        print(red + "[-] Can't use enconding options and shellcode at the same time.", file=stream)
         exit(1)
 
     if shell is not None and shell != "":
@@ -495,40 +608,31 @@ Before: Verify for defensive mechanism and devices such as:
             exit(1)
 
     if bind is True:
-        if port is not None:
-            verify_port(port)
-        else:
-            print(yellow + "[!] Please specify a port number, use the option -h,--help", file=stream)
-            exit(1)
+        verify_port_only(port)
         print(green + "[+] Preparing bind shells", file=stream)
-        generate_shells(bind_shells, ip, port, block, shell, all_encodings)
+        generate_shells(bind_shells, ip, port, block, shell, ob, all_encodings)
         exit(0)
 
-    # The ones below these line require both IP and PORT
-    if ip is not None and port is not None:
-        verify_ip(ip)
-        verify_port(port)
-    else:
-        print(yellow + "[!] Please specify an IP address and a port number, use the option -h,--help", file=stream)
-        exit(1)
-
     if reverse is True:
+        verify_ip_and_port(ip, port)
         print(green + "[+] Preparing reverse shells", file=stream)
-        generate_shells(reverse_shells, ip, port, block, shell, all_encodings)
+        generate_shells(reverse_shells, ip, port, block, shell, ob, all_encodings)
         exit(0)
 
     if hollowing is True:
+        verify_ip_and_port(ip, port)
         print(green + "[+] Preparing process hollowing code snippets", file=stream)
         print_snippets(hollowing_snippets, ip, port, block, shell)
         exit(0)
     
     if injectors is True:
+        verify_ip_and_port(ip, port)
         print(green + "[+] Preparing process injectors code snippets", file=stream)
         print_snippets(injectors_snippets, ip, port, block, shell)
         exit(0)
 
     if shellcode is True and shellcode_bind is False and shellcode_reverse is False:
-        print(red + "[-] Must specify a shellcode payload, use --sbind or --srev")
+        print(yellow + "[-] Please specify a shellcode payload, use --sbind or --srev")
         exit(1)
 
     if shellcode is True:     
@@ -536,28 +640,31 @@ Before: Verify for defensive mechanism and devices such as:
             print(red + "[-] Can't use both shellcode types at the same time", file=stream)
             exit(1)
 
-        '''
         if shellcode_linux is True and shellcode_windows is True:
             print(red + "[-] Can't use both windows shellcodes and linux shellcodes at the same time", file=stream)
             exit(1)
 
-        if ((shellcode_bind==True and shellcode_linux==False) or (shellcode_bind==True and shellcode_windows==False)):
-            print(yellow + "[!] Please specify the target OS using --windows or --linux", file=stream)
-            exit(1)
-        '''
-
-        if ((shellcode_reverse==True and shellcode_linux==False) or (shellcode_bind==True and shellcode_linux==False)):
-            print(yellow + "[!] Please specify the target OS using using --linux", file=stream)
+        if shellcode_linux is False and shellcode_windows is False:
+            print(yellow + "[-] Please specify an operating system with --linux or --windows", file=stream)
             exit(1)
                 
         if shellcode_bind is True:
+            verify_port_only(port)
             print(green + "[+] Generating bind shell shellcodes", file=stream)
-            generate_shellcode(ip, port, shellcode_linux, shellcode_payload)
-            exit(0)
+            data = generate_shellcode(ip, port, shellcode_os, shellcode_payload)
+            #exit(0)
 
         if shellcode_reverse is True:
+            verify_ip_and_port(ip, port)
             print(green + "[+] Generating reverse shell shellcodes", file=stream)
-            generate_shellcode(ip, port, shellcode_linux, shellcode_payload)
+            data = generate_shellcode(ip, port, shellcode_os, shellcode_payload)
+            #exit(0)
+    
+        if any(all_encryptors) == True:
+            crypter(data, all_encryptors)
+            exit(0)
+        else:
+            print(data)
             exit(0)
 
 if __name__ == "__main__":

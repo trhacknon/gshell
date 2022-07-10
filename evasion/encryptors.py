@@ -1,24 +1,30 @@
-def xor_encrypt(data):
+from itertools import cycle
+
+def xor_encrypt(data, key):
     """
-    XOR a byte-stream with a single key value (int)
+    XOR encryption
     """
 
-def aes_encrypt(data):
+    xored = ''.join(chr(ord(c)^ord(k)) for c,k in zip(data, cycle(key)))
+    print(xored)
+
+def aes_encrypt(data, key):
     """
     AES encryption
     """
 
-def caesar_encrypt(data):
+
+def caesar_encrypt(data, key):
     """
     Caesar encryption
     """
 
-def des_encrypt(data):
+def des_encrypt(data, key):
     """
     DES encryption
     """
 
-def rc2_encrypt(data):
+def rc2_encrypt(data, key):
     """
     RC2 encryption
     """
