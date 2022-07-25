@@ -1,8 +1,13 @@
 from urllib.parse import quote_plus
-#from binascii import hexlify
 import base64
 import io
-#import re
+
+"""
+Description: Contains encodings for payload types and others for shellcode types.
+
+sec: Is used to find the separator
+sep: Is used to print the separator
+"""
 
 sep = "\n----------------NEXT CODE BLOCK----------------\n"
 sec = "----------------NEXT CODE BLOCK----------------\n"

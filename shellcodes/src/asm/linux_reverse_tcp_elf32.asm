@@ -1,3 +1,5 @@
+; NASM
+
 global _start
 
 section .text
