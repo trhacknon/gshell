@@ -311,7 +311,7 @@ chmod +x ./example && ./example
 Clone or download the repository:
 
 ```sh
-git clone https://github.com/nozerobit/gshell
+git clone https://github.com/trhacknon/gshell
 ```
 
 Install the requirements:
@@ -337,7 +337,7 @@ gshell.py
 Clone or download the repository:
 
 ```sh
-git clone https://github.com/nozerobit/gshell C:\\Tools
+git clone https://github.com/trhacknon/gshell C:\\Tools
 ```
 
 > Note: I created a directory named `Tools` in the `C:\` root directory.
@@ -383,7 +383,7 @@ python gshell.py
 
 # Contact & Contributing
 
-If you find any issues then you can open an issue or contact me on [twitter](https://twitter.com/nozerobit).
+If you find any issues then you can open an issue or contact me on [twitter](https://twitter.com/).
 
 If you want to contribute then please feel free.
 
